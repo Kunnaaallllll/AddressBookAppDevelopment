@@ -3,6 +3,7 @@ package com.example.AddressBookApp.controllers;
 
 import com.example.AddressBookApp.dto.AddressBookDTO;
 import com.example.AddressBookApp.model.AddressBookModel;
+import com.example.AddressBookApp.service.AddressBookInterface;
 import com.example.AddressBookApp.service.AddressBookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ import java.util.List;
 public class AddressBookController {
 
     @Autowired
-    AddressBookService addressBookService;
+    AddressBookInterface addressBookInterface;
 
     @GetMapping
     public String greetUser() {
@@ -24,28 +25,28 @@ public class AddressBookController {
 
     @PostMapping("/addAddress")
     public ResponseEntity<String> addAddress(@RequestBody AddressBookDTO addressBookDTO) {
-        addressBookService.add(addressBookDTO);
+        addressBookInterface.add(addressBookDTO);
         return ResponseEntity.ok("details successfully added");
     }
 
     @GetMapping("/getDetails")
     public ResponseEntity<List<AddressBookModel>> getDetails(){
-        return ResponseEntity.ok(addressBookService.getDetails());
+        return ResponseEntity.ok(addressBookInterface.getDetails());
     }
 
     @GetMapping("/getDetails/{id}")
     public AddressBookModel getDetailsById(@PathVariable Long id){
-        return addressBookService.getDetailsById(id);
+        return addressBookInterface.getDetailsById(id);
     }
 
     @PutMapping("/updateDetails/{id}")
     public AddressBookModel updateDetails(@PathVariable Long id,@RequestBody AddressBookDTO addressBookDTO){
-        return addressBookService.updateDetails(id,addressBookDTO);
+        return addressBookInterface.updateDetails(id,addressBookDTO);
     }
 
     @DeleteMapping("/deleteDetails/{id}")
     public ResponseEntity<String> deleteDetails(@PathVariable Long id){
-        addressBookService.deleteDetails(id);
+        addressBookInterface.deleteDetails(id);
         return ResponseEntity.ok("deatil delated successfully");
     }
 }
