@@ -1,7 +1,7 @@
 package com.example.AddressBookApp.dto;
 
 
-import jakarta.persistence.Column;
+//import jakarta.persistence.Column;
 import lombok.*;
 
 @NoArgsConstructor
