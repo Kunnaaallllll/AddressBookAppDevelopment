@@ -1,9 +1,9 @@
 package com.example.AddressBookApp.service;
 
-import com.example.AddressBookApp.controllers.AddressBookController;
 import com.example.AddressBookApp.dto.AddressBookDTO;
 import com.example.AddressBookApp.model.AddressBookModel;
 import com.example.AddressBookApp.repository.AddressBookRepository;
+import com.example.AddressBookApp.exception.AddressBookException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,13 +48,8 @@ public class AddressBookService implements AddressBookInterface {
     @Override
     public AddressBookModel getById(Long id) {
         log.debug("Fetching address details for ID: {}", id);
-        AddressBookModel address = addressBookRepositories.findById(id).orElse(null);
-        if (address == null) {
-            log.warn("Address not found for ID: {}", id);
-            return null;
-        }
-        log.info("Address found for ID: {}", id);
-        return address;
+        return addressBookRepositories.findById(id)
+                .orElseThrow(() -> new AddressBookException("Address Not Found for ID: " + id));
     }
 
     @Override
@@ -73,7 +68,6 @@ public class AddressBookService implements AddressBookInterface {
             return ResponseEntity.status(404).body("Address Not Found");
         }
     }
-
     @Override
     public ResponseEntity<String> deleteAddress(Long id) {
         log.info("Received request to delete address for ID: {}", id);

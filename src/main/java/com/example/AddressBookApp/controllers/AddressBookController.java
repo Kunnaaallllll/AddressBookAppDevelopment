@@ -3,7 +3,8 @@ package com.example.AddressBookApp.controllers;
 import com.example.AddressBookApp.dto.AddressBookDTO;
 import com.example.AddressBookApp.model.AddressBookModel;
 import com.example.AddressBookApp.service.AddressBookInterface;
-import com.example.AddressBookApp.service.AddressBookService;
+import com.example.AddressBookApp.exception.AddressBookException;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class AddressBookController {
     }
 
     @PostMapping("/addAddress")
-    public ResponseEntity<String> addAddress(@RequestBody AddressBookDTO addressBookDTO) {
+    public ResponseEntity<String> addAddress(@Valid @RequestBody AddressBookDTO addressBookDTO) {
         log.info("Received request to add address: {}", addressBookDTO);
         try {
             ResponseEntity<String> response = addressBookInterface.add(addressBookDTO);
@@ -66,7 +67,7 @@ public class AddressBookController {
             Object address = addressBookInterface.getById(id);
             if (address == null) {
                 log.warn("No address found for ID: {}", id);
-                return ResponseEntity.status(404).body("Address Not Found");
+                throw new AddressBookException("Address Not Found for ID: " + id);
             }
             log.info("Address details fetched successfully for ID: {}", id);
             return ResponseEntity.ok(address);
@@ -77,17 +78,14 @@ public class AddressBookController {
     }
 
     @PutMapping("/updateAddress/{id}")
-    public ResponseEntity<String> updateAddressById(@PathVariable Long id, @RequestBody AddressBookDTO addressBookDTO) {
+    public ResponseEntity<String> updateAddressById(@PathVariable Long id, @Valid @RequestBody AddressBookDTO addressBookDTO) {
         log.info("Received request to update address for ID: {}", id);
-
         try {
             ResponseEntity<String> response = addressBookInterface.updateAddress(id, addressBookDTO);
-
             if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 log.warn("Address not found for ID: {}", id);
                 return ResponseEntity.status(404).body("Address Not Found");
             }
-
             log.info("Address updated successfully for ID: {}", id);
             return response;
         } catch (Exception e) {
