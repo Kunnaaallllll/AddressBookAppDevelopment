@@ -9,6 +9,15 @@ import lombok.*;
 @Data
 public class AddressBookDTO {
 
+    @NotBlank(message = "Name cannot be empty")
+    private String name;
+
+    @NotBlank(message = "Address cannot be empty")
+    private String address;
+
+    @Pattern(regexp = "^\\d{10}$", message = "Phone number must be 10 digits")
+    private String phoneNumber;
+
     public String getName() {
         return name;
     }
@@ -21,12 +30,4 @@ public class AddressBookDTO {
         return phoneNumber;
     }
 
-    @NotBlank(message = "Name cannot be empty")
-    private String name;
-
-    @NotBlank(message = "Address cannot be empty")
-    private String address;
-
-    @Pattern(regexp = "^\\d{10}$", message = "Phone number must be 10 digits")
-    private String phoneNumber;
 }

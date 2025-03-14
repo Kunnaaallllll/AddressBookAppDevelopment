@@ -2,6 +2,7 @@ package com.example.AddressBookApp.controllers;
 
 import com.example.AddressBookApp.dto.LoginDTO;
 import com.example.AddressBookApp.dto.RegisterDTO;
+import com.example.AddressBookApp.model.User;
 import com.example.AddressBookApp.service.UserInterface;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -57,5 +58,11 @@ public class UserController {
         ResponseEntity<Map<String, String>> response = userInterface.resetPassword(email, currentPassword, newPassword);
         log.info("Reset password response: {}", response.getBody());
         return response;
+    }
+
+    @PostMapping("/logout/{id}")
+    public ResponseEntity<Map<String, String>> logoutUser(@PathVariable Long id){
+        System.out.println(1);
+        return userInterface.logoutUser(id);
     }
 }

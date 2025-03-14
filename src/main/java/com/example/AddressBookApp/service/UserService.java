@@ -1,10 +1,10 @@
 package com.example.AddressBookApp.service;
 
-import com.example.AddressBookApp.controllers.UserController;
 import com.example.AddressBookApp.dto.LoginDTO;
 import com.example.AddressBookApp.dto.RegisterDTO;
 import com.example.AddressBookApp.model.User;
 import com.example.AddressBookApp.repository.UserRepository;
+import com.example.AddressBookApp.service.UserInterface;
 import com.example.AddressBookApp.utility.JwtUtility;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -50,8 +50,6 @@ public class UserService implements UserInterface {
         user.setEmail(registerDTO.getEmail());
         user.setPassword(registerDTO.getPassword());
 
-        String token = jwtUtility.generateToken(user.getEmail());
-        log.debug("Generated JWT token for user: {}", user.getEmail());
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
@@ -74,6 +72,8 @@ public class UserService implements UserInterface {
             User user = userExists.get();
             if (matchPassword(loginDTO.getPassword(), user.getPassword())) {
                 String token = jwtUtility.generateToken(user.getEmail());
+                user.setToken(token);
+                userRepository.save(user);
                 log.debug("Login successful for user: {} - Token generated", user.getEmail());
 
                 emailService.sendEmail(user.getEmail(), "Welcome Back!",
@@ -159,5 +159,19 @@ public class UserService implements UserInterface {
 
         response.put("message", "Password reset successfully!");
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<Map<String, String>> logoutUser(Long id){
+        Map<String, String> hm = new HashMap<>();
+        User userExists = userRepository.findById(id).orElse(null);
+        if(userExists == null){
+            hm.put("error","User Not Found For ID: "+id);
+            return ResponseEntity.ok(hm);
+        }
+        userExists.setToken(null);
+        userRepository.save(userExists);
+        hm.put("message","User Logged Out Successfully for ID: "+id);
+        return ResponseEntity.ok(hm);
     }
 }

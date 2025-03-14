@@ -4,6 +4,7 @@ import com.example.AddressBookApp.dto.AddressBookDTO;
 import com.example.AddressBookApp.model.AddressBookModel;
 import com.example.AddressBookApp.repository.AddressBookRepository;
 import com.example.AddressBookApp.exception.AddressBookException;
+import com.example.AddressBookApp.service.AddressBookInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

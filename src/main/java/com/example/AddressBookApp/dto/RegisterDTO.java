@@ -1,5 +1,6 @@
 package com.example.AddressBookApp.dto;
 
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -16,29 +17,6 @@ public class RegisterDTO {
     @Pattern(regexp = "^[A-Z][a-zA-Z]*$", message = "Name must start with a capital letter and contain only letters")
     private String fullName;
 
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
     @NotBlank(message = "Email Cannot be Empty")
     @Email
@@ -46,7 +24,22 @@ public class RegisterDTO {
 
     @NotBlank(message = "Password cannot be empty")
     @Size(min = 6, message = "Password must be at least 6 characters long")
-    @Pattern(regexp = "^(?=.[A-Z])(?=.\\d)[A-Za-z\\d@$!%*?&]{6,}$",
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@$!%*?&]{6,}$",
             message = "Password must have at least 6 characters, 1 uppercase letter, and 1 digit")
     private String password;
+
+
+    public String getFullName() {
+        return fullName;
+    }
+
+
+    public String getEmail() {
+        return email;
+    }
+
+
+    public String getPassword() {
+        return password;
+    }
 }
