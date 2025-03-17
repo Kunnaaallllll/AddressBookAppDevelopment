@@ -1,6 +1,6 @@
 package com.example.AddressBookApp.model;
 
-
+//user entity define krne k liye
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;

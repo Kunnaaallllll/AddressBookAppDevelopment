@@ -1,6 +1,7 @@
 package com.example.AddressBookApp.service;
 
 import com.example.AddressBookApp.dto.AddressBookDTO;
+import com.example.AddressBookApp.dto.ResponseDTO;
 import com.example.AddressBookApp.model.AddressBookModel;
 import com.example.AddressBookApp.repository.AddressBookRepository;
 import com.example.AddressBookApp.exception.AddressBookException;
@@ -9,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -24,19 +23,24 @@ public class AddressBookService implements AddressBookInterface {
 
 
     @Override
-    public ResponseEntity<String> add(AddressBookDTO addressBookDTO) {
+    public ResponseDTO<String, String> add(AddressBookDTO addressBookDTO) {
         log.info("Received request to add address: {}", addressBookDTO);
         AddressBookModel addressBookModel = new AddressBookModel();
         addressBookModel.setName(addressBookDTO.getName());
         addressBookModel.setAddress(addressBookDTO.getAddress());
         addressBookModel.setPhoneNumber(addressBookDTO.getPhoneNumber());
+        ResponseDTO<String, String> res = new ResponseDTO<>();
         try {
             addressBookRepositories.save(addressBookModel);
             log.info("Address added successfully: {}", addressBookDTO);
-            return ResponseEntity.ok("Address Added Successfully");
+            res.setMessage("message");
+            res.setMessageData("Address Added Successfully");
+            return res;
         } catch (Exception e) {
             log.error("Error while adding address: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(e.getMessage());
+            res.setMessage("error");
+            res.setMessageData(e.getMessage());
+            return res;
         }
     }
 
@@ -54,7 +58,8 @@ public class AddressBookService implements AddressBookInterface {
     }
 
     @Override
-    public ResponseEntity<String> updateAddress(Long id, AddressBookDTO addressBookDTO) {
+    public ResponseDTO<String, String> updateAddress(Long id, AddressBookDTO addressBookDTO) {
+        ResponseDTO<String, String> res = new ResponseDTO<>();
         log.info("Received request to update address for ID: {}", id);
         AddressBookModel existingAddress = addressBookRepositories.findById(id).orElse(null);
         if (existingAddress != null) {
@@ -63,21 +68,30 @@ public class AddressBookService implements AddressBookInterface {
             existingAddress.setPhoneNumber(addressBookDTO.getPhoneNumber());
             addressBookRepositories.save(existingAddress);
             log.info("Address updated successfully for ID: {}", id);
-            return ResponseEntity.ok("Update DONE Successfully");
+            res.setMessage("message");
+            res.setMessageData("Update DONE Successfully");
+            return res;
         } else {
             log.warn("Address update failed, ID not found: {}", id);
-            return ResponseEntity.status(404).body("Address Not Found");
+            res.setMessage("error");
+            res.setMessageData("Address Not Found");
+            return res;
         }
     }
     @Override
-    public ResponseEntity<String> deleteAddress(Long id) {
+    public ResponseDTO<String, String> deleteAddress(Long id) {
         log.info("Received request to delete address for ID: {}", id);
+        ResponseDTO<String, String> res = new ResponseDTO<>();
         if (!addressBookRepositories.existsById(id)) {
             log.warn("Address not found for deletion, ID: {}", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Address ID Not FOUND");
+            res.setMessage("error");
+            res.setMessageData("Address ID Not FOUND");
+            return res;
         }
         addressBookRepositories.deleteById(id);
         log.info("Address deleted successfully for ID: {}", id);
-        return ResponseEntity.ok("Address Deleted Successfully");
+        res.setMessage("message");
+        res.setMessageData("Address Deleted Successfully");
+        return res;
     }
 }

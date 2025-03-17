@@ -2,6 +2,7 @@ package com.example.AddressBookApp.service;
 
 import com.example.AddressBookApp.dto.LoginDTO;
 import com.example.AddressBookApp.dto.RegisterDTO;
+import com.example.AddressBookApp.dto.ResponseDTO;
 import com.example.AddressBookApp.model.User;
 import com.example.AddressBookApp.repository.UserRepository;
 import com.example.AddressBookApp.service.UserInterface;
@@ -10,13 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j  // Lombok Logging
@@ -35,14 +31,15 @@ public class UserService implements UserInterface {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     @Override
-    public ResponseEntity<Map<String, String>> registerUser(RegisterDTO registerDTO) {
+    public ResponseDTO<String, String> registerUser(RegisterDTO registerDTO) {
         log.info("Registering user: {}", registerDTO.getEmail());
-        Map<String, String> res = new HashMap<>();
-
+        ResponseDTO<String, String> res = new ResponseDTO<>();
         if (existsByEmail(registerDTO.getEmail())) {
             log.warn("Registration failed: User already exists with email {}", registerDTO.getEmail());
-            res.put("error", "User Already Exists");
-            return ResponseEntity.ok(res);
+            res.setMessage("error");
+            res.setMessageData("User Already Exists");
+
+            return res;
         }
 
         User user = new User();
@@ -58,14 +55,15 @@ public class UserService implements UserInterface {
         emailService.sendEmail(user.getEmail(), "Welcome to Our Platform!",
                 "Hello " + user.getFullName() + ",\n\nYour account has been successfully created!");
 
-        res.put("message", "User Registered Successfully");
-        return ResponseEntity.ok(res);
+        res.setMessage("message");
+        res.setMessageData("User Registered Successfully");
+        return res;
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> loginUser(LoginDTO loginDTO) {
+    public ResponseDTO<String, String> loginUser(LoginDTO loginDTO) {
         log.info("Login attempt for user: {}", loginDTO.getEmail());
-        Map<String, String> res = new HashMap<>();
+        ResponseDTO<String, String> res = new ResponseDTO<>();
         Optional<User> userExists = getUserByEmail(loginDTO.getEmail());
 
         if (userExists.isPresent()) {
@@ -78,18 +76,20 @@ public class UserService implements UserInterface {
 
                 emailService.sendEmail(user.getEmail(), "Welcome Back!",
                         "Hello " + user.getFullName() + ",\n\nYou have successfully logged in. Your token: " + token);
-
-                res.put("message", "User Logged In Successfully: " + token);
-                return ResponseEntity.ok(res);
+                res.setMessage("message");
+                res.setMessageData("User Logged In Successfully: " + token);
+                return res;
             } else {
                 log.warn("Invalid credentials for user: {}", loginDTO.getEmail());
-                res.put("error", "Invalid Credentials");
-                return ResponseEntity.ok(res);
+                res.setMessage("error");
+                res.setMessageData("Invalid Crendentials");
+                return res;
             }
         } else {
             log.error("User not found with email: {}", loginDTO.getEmail());
-            res.put("error", "User Not Found");
-            return ResponseEntity.ok(res);
+            res.setMessage("error");
+            res.setMessageData("User Not Found");
+            return res;
         }
     }
 
@@ -112,15 +112,16 @@ public class UserService implements UserInterface {
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> forgotPassword(String email, String newPassword) {
+    public ResponseDTO<String, String> forgotPassword(String email, String newPassword) {
         log.warn("Forgot password request received for email: {}", email);
         Optional<User> userOptional = userRepository.findByEmail(email);
-        Map<String, String> response = new HashMap<>();
+        ResponseDTO<String, String> res = new ResponseDTO<>();
 
         if (userOptional.isEmpty()) {
             log.error("Forgot password failed: User not found with email: {}", email);
-            response.put("message", "Sorry! We cannot find the user email: " + email);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            res.setMessage("error");
+            res.setMessageData("Sorry! We cannot find the user email: " + email);
+            return res;
         }
 
         User user = userOptional.get();
@@ -129,49 +130,55 @@ public class UserService implements UserInterface {
         log.info("Password updated successfully for user: {}", email);
 
         emailService.sendEmail(email, "Password Reset", "Your password has been changed successfully!");
-        response.put("message", "Password has been changed successfully!");
-        return ResponseEntity.ok(response);
+        res.setMessage("message");
+        res.setMessageData("Password has Been Updated Successfully");
+        return res;
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> resetPassword(String email, String currentPassword, String newPassword) {
+    public ResponseDTO<String, String> resetPassword(String email, String currentPassword, String newPassword) {
         log.warn("Reset password request received for email: {}", email);
         Optional<User> userOptional = userRepository.findByEmail(email);
-        Map<String, String> response = new HashMap<>();
+        ResponseDTO<String, String> res = new ResponseDTO<>();
 
         if (userOptional.isEmpty()) {
             log.error("Reset password failed: User not found with email: {}", email);
-            response.put("message", "User not found with email: " + email);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            res.setMessage("error");
+            res.setMessageData("User not found with email: " + email);
+            return res;
         }
 
         User user = userOptional.get();
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             log.warn("Reset password failed: Incorrect current password for user: {}", email);
-            response.put("message", "Current password is incorrect!");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            res.setMessage("error");
+            res.setMessageData("Current Password is Incorrect");
+            return res;
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("Password reset successfully for user: {}", email);
 
-        response.put("message", "Password reset successfully!");
-        return ResponseEntity.ok(response);
+        res.setMessage("message");
+        res.setMessageData("Password Reset Successfully");
+        return res;
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> logoutUser(Long id){
-        Map<String, String> hm = new HashMap<>();
+    public ResponseDTO<String, String> logoutUser(Long id){
+        ResponseDTO<String, String> res = new ResponseDTO<>();
         User userExists = userRepository.findById(id).orElse(null);
         if(userExists == null){
-            hm.put("error","User Not Found For ID: "+id);
-            return ResponseEntity.ok(hm);
+            res.setMessage("error");
+            res.setMessageData("User Not Found For ID: "+id);
+            return res;
         }
         userExists.setToken(null);
         userRepository.save(userExists);
-        hm.put("message","User Logged Out Successfully for ID: "+id);
-        return ResponseEntity.ok(hm);
+        res.setMessage("message");
+        res.setMessageData("User Logged Out Successfully for ID: "+id);
+        return res;
     }
 }
